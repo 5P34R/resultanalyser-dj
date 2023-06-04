@@ -29,6 +29,8 @@ class BatchStudentList(APIView):
     
     def get(self, request):
         batch = request.query_params.get('batch', '')
+        if batch == '':
+            return Response("Please provide batch name", status=status.HTTP_400_BAD_REQUEST)
         students = Student.objects.filter(batch__name__icontains=batch)
         serializer = StudentSerializer(students, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -36,9 +38,8 @@ class BatchStudentList(APIView):
     
     def post(self, request):
         file_obj = request.FILES['file']
-        breakpoint()
         try:
             data = pd.read_excel(file_obj)
-            return Response(data.to_dict(orient='records')[0])
+            return Response(data.to_dict(orient='records'))
         except Exception as e:
             return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
